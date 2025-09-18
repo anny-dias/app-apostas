@@ -1,0 +1,20 @@
+# Node
+node_modules/
+npm-debug.log
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/raw/
+data/private/
