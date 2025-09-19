@@ -1,0 +1,54 @@
+name: CI - SCA (Snyk)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  snyk-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      - name: Run Snyk test for Node
+        working-directory: api
+        run: snyk test --all-projects --json > snyk-node.json
+
+      - name: Run Snyk test for Python
+        working-directory: ml
+        run: snyk test --all-projects --file=requirements.txt --json > snyk-python.json
+
+      - name: Upload Snyk reports as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-reports
+          path: |
+            api/snyk-node.json
+            ml/snyk-python.json
+
+      - name: Fail on critical vulnerabilities
+        run: |
+          CRIT_NODE=$(jq '[.vulnerabilities[] | select(.severity=="high" or .severity=="critical")] | length' api/snyk-node.json)
+          CRIT_PY=$(jq '[.vulnerabilities[] | select(.severity=="high" or .severity=="critical")] | length' ml/snyk-python.json)
+          TOTAL=$((CRIT_NODE + CRIT_PY))
+          echo "Critical/high vulnerabilities found: $TOTAL"
+          if [ "$TOTAL" -gt 0 ]; then
+            exit 1
+          fi
+        shell: bash

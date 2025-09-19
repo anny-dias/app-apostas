@@ -1,0 +1,124 @@
+name: Security CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+
+  # 1) SAST
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python and Node
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep
+        run: |
+          semgrep ci --config .semgrep.yml --sarif --sarif-output=semgrep.sarif || true
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+      - name: Fail SAST if critical findings
+        run: |
+          ERRORS=$(jq '[.runs[].results[] | select(.level=="error" or .level=="critical")] | length' semgrep.sarif)
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "Blocking PR: $ERRORS SAST critical findings"
+            exit 1
+          fi
+
+  # 2) SCA
+  sca:
+    runs-on: ubuntu-latest
+    needs: sast
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      - name: Run Snyk Node
+        working-directory: api
+        run: snyk test --all-projects --json > snyk-node.json
+
+      - name: Run Snyk Python
+        working-directory: ml
+        run: snyk test --all-projects --file=requirements.txt --json > snyk-python.json
+
+      - name: Upload Snyk reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-reports
+          path: |
+            api/snyk-node.json
+            ml/snyk-python.json
+
+      - name: Fail SCA if critical findings
+        run: |
+          CRIT_NODE=$(jq '[.vulnerabilities[] | select(.severity=="high" or .severity=="critical")] | length' api/snyk-node.json)
+          CRIT_PY=$(jq '[.vulnerabilities[] | select(.severity=="high" or .severity=="critical")] | length' ml/snyk-python.json)
+          TOTAL=$((CRIT_NODE + CRIT_PY))
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "Blocking PR: $TOTAL SCA critical findings"
+            exit 1
+          fi
+
+  # 3) DAST
+  dast:
+    runs-on: ubuntu-latest
+    needs: sca
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run OWASP ZAP
+        run: |
+          mkdir zap-reports
+          docker run -u zap -v $(pwd)/zap-reports:/zap/wrk:rw -i owasp/zap2docker-stable \
+            zap-baseline.py -t http://staging.example.com -r zap-report.html -J zap-report.json -d
+
+      - name: Upload DAST reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: dast-reports
+          path: zap-reports/
+
+      - name: Fail DAST if critical findings
+        run: |
+          CRITICAL=$(jq '[.site[0].alerts[] | select(.risk=="High" or .risk=="Medium")] | length' zap-reports/zap-report.json)
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "Blocking deploy: $CRITICAL DAST critical/medium issues"
+            exit 1
+          fi
+
+  # 4) Alerts (Slack/Email)
+  alerts:
+    runs-on: ubuntu-latest
+    needs: [sast, sca, dast]
+    steps:
+      - name: Send Slack notification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C12345678'        # seu canal
+          slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          text: "🚨 Security Pipeline falhou em ${{ github.repository }} PR #${{ github.event.pull_request.number }}. Verifique artefatos de SAST, SCA e DAST."
