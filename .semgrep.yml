@@ -1,0 +1,36 @@
+rules:
+  - id: js-eval-usage
+    languages: [javascript]
+    message: "Uso de eval() detectado — evita execuções de código dinâmico."
+    severity: ERROR
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: new Function($X)
+
+  - id: js-innerhtml-xss
+    languages: [javascript]
+    message: "Atribuição a innerHTML pode causar XSS se input não for sanitizado."
+    severity: WARNING
+    pattern: |
+      $EL.innerHTML = $INPUT
+
+  - id: py-exec-or-eval
+    languages: [python]
+    message: "Uso de eval/exec detectado em Python — revisar input."
+    severity: ERROR
+    pattern-either:
+      - pattern: eval($ARG)
+      - pattern: exec($ARG)
+
+  - id: debug-true
+    languages: [python]
+    message: "DEBUG=True em produção expõe informações sensíveis."
+    severity: ERROR
+    pattern: |
+      DEBUG = True
+
+  - id: aws-key-hardcoded
+    languages: [python]
+    message: "Possível chave AWS codificada no código."
+    severity: CRITICAL
+    pattern-regex: "AKIA[0-9A-Z]{16}"

@@ -1,4 +1,4 @@
-name: CI
+name: CI & SAST
 
 on:
   push:
@@ -8,7 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # --------------------------
+      # Checkout do código
+      # --------------------------
       - uses: actions/checkout@v4
 
       # --------------------------
@@ -52,16 +56,37 @@ jobs:
           cd ../ml && pytest -q || exit 1
 
       # --------------------------
-      # Rodar Semgrep e salvar relatório
+      # Instalar Semgrep
+      # --------------------------
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      # --------------------------
+      # Rodar Semgrep + gerar SARIF + fail on critical/error
       # --------------------------
       - name: Run Semgrep scan
         run: |
-          pip install semgrep
-          semgrep --config=p/ci --json --output docs/evidence/semgrep-report.json
+          semgrep --config .semgrep.yml \
+                  --sarif docs/evidence/semgrep.sarif \
+                  --fail-only "error,critical" \
+                  --json \
+                  --output docs/evidence/semgrep-report.json \
+                  --diff
 
-      - name: Upload Semgrep report
+      # --------------------------
+      # Upload Semgrep JSON artifact
+      # --------------------------
+      - name: Upload Semgrep JSON report
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: semgrep-report
           path: docs/evidence/semgrep-report.json
+
+      # --------------------------
+      # Upload SARIF para GitHub Security tab
+      # --------------------------
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: docs/evidence/semgrep.sarif

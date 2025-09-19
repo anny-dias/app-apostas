@@ -38,6 +38,8 @@ jobs:
       # --------------------------
       - name: Run Semgrep (CI mode) and produce SARIF
         run: |
+          # Define baseline para PRs para evitar ruído
+          export SEMGREP_BASELINE_REF=main
           semgrep ci --config .semgrep.yml --sarif --sarif-output=semgrep.sarif || true
         env:
           SEMGREP_TIMEOUT: 600
