@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # --------------------------
+      # Setup Node + instalar deps
+      # --------------------------
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -20,6 +23,9 @@ jobs:
         working-directory: api
         run: npm ci
 
+      # --------------------------
+      # Setup Python + instalar deps
+      # --------------------------
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -29,10 +35,33 @@ jobs:
         working-directory: ml
         run: |
           python -m venv venv
-          . venv/bin/activate
+          # Ativação cross-platform
+          if [ -f venv/bin/activate ]; then
+            . venv/bin/activate
+          else
+            venv\Scripts\activate
+          fi
           pip install -r requirements.txt
 
+      # --------------------------
+      # Rodar testes
+      # --------------------------
       - name: Run tests
         run: |
           cd api && npm test || exit 1
           cd ../ml && pytest -q || exit 1
+
+      # --------------------------
+      # Rodar Semgrep e salvar relatório
+      # --------------------------
+      - name: Run Semgrep scan
+        run: |
+          pip install semgrep
+          semgrep --config=p/ci --json --output docs/evidence/semgrep-report.json
+
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: semgrep-report
+          path: docs/evidence/semgrep-report.json
