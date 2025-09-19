@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install API deps
+        working-directory: api
+        run: npm ci
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ML deps
+        working-directory: ml
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd api && npm test || exit 1
+          cd ../ml && pytest -q || exit 1
