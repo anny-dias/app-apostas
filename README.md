@@ -5,6 +5,15 @@ Este repositório demonstra uma pipeline de segurança **completa** para a sprin
 
 A pipeline cobre **SAST** (análise estática), **SCA** (análise de dependências), **DAST** (testes dinâmicos) e integra essas ferramentas ao seu **CI/CD pipeline**. Ela também inclui **gates de segurança** e **notificações** via Slack.
 
+## Colaboradores
+- **ANNY CAROLINA ANDRADE DIAS** - RM:98295
+- **HENRIQUE LIMA** - RM:551528
+- **FERNANDA KAORY SAITO** - RM:551104
+- **PEDRO EMERICI GAVA** - RM:551043
+- **PEDRO HENRIQUE MENEZES** - RM:97432
+
+---
+
 ## Ferramentas Utilizadas
 - **SAST**: Semgrep (análise estática de código).
 - **SCA**: OWASP Dependency-Check, Snyk (verificação de dependências).
