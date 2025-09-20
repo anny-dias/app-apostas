@@ -165,6 +165,3 @@ Caso tenha qualquer dúvida ou queira personalizar mais ainda, sinta-se à vonta
 * Código: Licença **MIT/Apache/BSD**.
 * Dados: Utilize **CC0/CC BY**. Certifique-se de **anonimizar dados pessoais**.
 
-```
-
-
