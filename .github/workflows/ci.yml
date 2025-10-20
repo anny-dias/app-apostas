@@ -1,92 +1,81 @@
-name: CI & SAST
-
+name: CI
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
+  push: { branches: [main] }
 
 jobs:
-  build:
+  unit-sast-sca:
     runs-on: ubuntu-latest
-
     steps:
-      # --------------------------
-      # Checkout do código
-      # --------------------------
       - uses: actions/checkout@v4
 
-      # --------------------------
-      # Setup Node + instalar deps
-      # --------------------------
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+      # API tests
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
       - name: Install API deps
         working-directory: api
-        run: npm ci
+        run: npm ci || npm i
+      - name: Run API tests
+        working-directory: api
+        run: npm test -- --ci --reporters=default
 
-      # --------------------------
-      # Setup Python + instalar deps
-      # --------------------------
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install ML deps
+      # ML tests
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Install ML deps & tests
         working-directory: ml
         run: |
-          python -m venv venv
-          # Ativação cross-platform
-          if [ -f venv/bin/activate ]; then
-            . venv/bin/activate
-          else
-            venv\Scripts\activate
-          fi
           pip install -r requirements.txt
+          pytest -q
 
-      # --------------------------
-      # Rodar testes
-      # --------------------------
-      - name: Run tests
-        run: |
-          cd api && npm test || exit 1
-          cd ../ml && pytest -q || exit 1
-
-      # --------------------------
-      # Instalar Semgrep
-      # --------------------------
-      - name: Install Semgrep
-        run: pip install semgrep
-
-      # --------------------------
-      # Rodar Semgrep + gerar SARIF + fail on critical/error
-      # --------------------------
-      - name: Run Semgrep scan
-        run: |
-          semgrep --config .semgrep.yml \
-                  --sarif docs/evidence/semgrep.sarif \
-                  --fail-only "error,critical" \
-                  --json \
-                  --output docs/evidence/semgrep-report.json \
-                  --diff
-
-      # --------------------------
-      # Upload Semgrep JSON artifact
-      # --------------------------
-      - name: Upload Semgrep JSON report
-        if: always()
-        uses: actions/upload-artifact@v3
+      # SAST (Semgrep)
+      - name: Semgrep (OWASP + LGPD/JWT)
+        uses: returntocorp/semgrep-action@v1
         with:
-          name: semgrep-report
-          path: docs/evidence/semgrep-report.json
+          config: |
+            p/ci
+            p/owasp-top-ten
+            .semgrep/lgpd.yml
+            .semgrep/jwt.yml
+          generateSarif: true
+      - name: Upload SARIF (Semgrep)
+        uses: github/codeql-action/upload-sarif@v3
+        with: { sarif_file: semgrep.sarif }
 
-      # --------------------------
-      # Upload SARIF para GitHub Security tab
-      # --------------------------
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+      # SCA (Trivy)
+      - name: Trivy FS
+        uses: aquasecurity/trivy-action@0.22.0
         with:
-          sarif_file: docs/evidence/semgrep.sarif
+          scan-type: fs
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+  build-and-dast:
+    runs-on: ubuntu-latest
+    needs: [unit-sast-sca]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: |
+          docker build -t rb-ml ./ml
+          docker build -t rb-api ./api
+      - name: Start stack for DAST
+        run: |
+          docker network create rbnet
+          docker run -d --name db --network rbnet -e POSTGRES_USER=app -e POSTGRES_PASSWORD=app -e POSTGRES_DB=rb postgres:16-alpine
+          sleep 5
+          docker cp api/sql/001_init.sql db:/001_init.sql
+          docker exec db psql -U app -d rb -f /001_init.sql
+          docker run -d --name ml --network rbnet -p 8000:8000 rb-ml
+          docker run -d --name api --network rbnet -p 8080:8080 \
+            -e DB_HOST=db -e DB_USER=app -e DB_PASS=app -e DB_NAME=rb \
+            -e ML_URL=http://ml:8000 -e JWT_SECRET=change_me -e JWT_ISS=rb-app -e JWT_AUD=rb-users \
+            rb-api
+          for i in {1..30}; do curl -fsS http://localhost:8080/health && break || sleep 2; done
+      - name: ZAP Baseline (DAST)
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'http://localhost:8080'
+          fail_action: true
+          rules_file_name: '.zap/rules.tsv'

@@ -1,0 +1,7 @@
+rules:
+- id: jwt-missing-claims
+  message: "JWT sem expiração/iss/aud definidos."
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: jwt.sign($P,$S,{...})

@@ -1,0 +1,92 @@
+# DATA-LICENSE
+
+Este arquivo define as **licenças** e **regras de uso** para todo o conteúdo localizado em `./data/` deste repositório.
+
+## 1) Escopo
+
+- Abrange **todos os dados** em `./data/` (incluindo subpastas como `./data/synthetic/`, `./data/raw/`, `./data/processed/`).
+- *Não* se aplica ao **código-fonte** (licenciado separadamente em `LICENSE`) nem a marcas/logotipos de terceiros.
+
+## 2) Licença principal (dados do projeto)
+
+Salvo indicação em contrário neste arquivo ou no manifesto (ver seção 5), **todos os dados produzidos por este projeto** e armazenados em `./data/synthetic/` são disponibilizados sob:
+
+- **Creative Commons Zero v1.0 Universal (CC0-1.0)**
+- **SPDX**: `CC0-1.0`
+- Texto oficial: https://creativecommons.org/publicdomain/zero/1.0/
+
+**Efeito prático:** você pode **usar, copiar, modificar, publicar e redistribuir** esses dados, inclusive para fins **comerciais**, **sem necessidade de atribuição**, na máxima medida permitida por lei. Em contrapartida, **exoneramos** garantias (ver seção 8).
+
+> Observação: os dados rotulados como *sintéticos* foram **gerados artificialmente** (simulados, dados fictícios, amostras embaralhadas/anônimas). Não contêm PII real, conforme política LGPD (seção 4).
+
+## 3) Conteúdos de terceiros (quando existirem)
+
+Se este repositório incorporar **dados de terceiros** (por exemplo, trechos de datasets públicos), eles **não** estão automaticamente sob CC0. Nesses casos:
+
+- A licença do arquivo/diretório será **explicitamente indicada** no manifesto (seção 5).
+- Licenças comuns:
+  - **CC BY 4.0** (exige **atribuição**): https://creativecommons.org/licenses/by/4.0/
+  - **CC BY-SA 4.0**, **ODbL**, etc., conforme a fonte.
+
+### 3.1 Exemplo de atribuição (para CC BY 4.0)
+
+Se você reutilizar um arquivo marcado como CC BY 4.0, inclua algo como:
+
+> “Este trabalho incorpora dados de **{Nome do Dataset/Fonte}** (link: {URL}), licenciados sob **CC BY 4.0**. © {Autor/Organização}, utilizado conforme os termos da licença.”
+
+## 4) Privacidade, LGPD e restrições de reidentificação
+
+- Este projeto **não inclui** dados pessoais (PII) reais sem **consentimento explícito** e documentação apropriada.
+- É **estritamente proibido** tentar **reidentificar** indivíduos, combinar estes dados com outras bases para inferir identidades, ou contornar técnicas de anonimização/pseudonimização.
+- Caso você submeta novos dados a `./data/`, **garanta**:
+  - Base legal adequada (ex.: consentimento, ou outra hipótese válida na LGPD).
+  - Remoção ou anonimização de PII.
+  - Atualização do manifesto (seção 5) com **licença** e **origem**.
+
+Para contato sobre privacidade/DPO (se aplicável): **{seu email/contato}**.
+
+## 5) Manifesto de dados (proveniência e licenças)
+
+Para garantir transparência, utilize um manifesto em `./data/MANIFEST.csv` com as colunas:
+`path, source, license, attribution_required, notes`
+
+### 5.1 Modelo de `MANIFEST.csv`
+
+
+> Se um arquivo **não** constar no manifesto, presume-se **CC0-1.0** **apenas** se estiver em `./data/synthetic/`. Para qualquer outro diretório (ex.: `raw/`), **exija** entrada no manifesto.
+
+## 6) Direitos de marcas e conteúdos não cobertos
+
+- Nomes e logotipos de empresas, marcas registradas e sinais distintivos reproduzidos em exemplos ou metadados **permanecem propriedade de seus titulares** e **não** são licenciados por este arquivo.
+- Softwares, modelos e código-fonte do repositório **seguem a licença do arquivo `LICENSE`** (ex.: MIT, Apache-2.0).
+
+## 7) Permissões, obrigações e proibições (resumo)
+
+**Você pode (conforme a licença aplicável):**
+- Usar, copiar, modificar, mesclar, publicar, analisar e redistribuir os dados.
+- Utilizar em contextos acadêmicos, comerciais e de pesquisa.
+
+**Você deve (quando aplicável):**
+- Respeitar a licença específica de cada arquivo (ex.: **atribuir** autores em CC BY).
+- Manter as **notas de licença/atribuição** junto com qualquer redistribuição.
+- Preservar avisos de **isenção de garantia**.
+
+**Você não pode:**
+- Violar leis de privacidade (ex.: **LGPD**).
+- Tentar **reidentificar** indivíduos, nem remover mecanismos de anonimização/pseudonimização.
+- Utilizar marcas ou símbolos de terceiros de forma que infrinja direitos de marca.
+
+## 8) Isenção de garantias
+
+OS DADOS SÃO FORNECIDOS “NO ESTADO EM QUE SE ENCONTRAM”, SEM QUALQUER TIPO DE GARANTIA, EXPLÍCITA OU IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO A, GARANTIAS DE COMERCIABILIDADE, ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO E NÃO VIOLAÇÃO. EM NENHUMA HIPÓTESE OS AUTORES OU TITULARES SERÃO RESPONSÁVEIS POR QUAISQUER REIVINDICAÇÕES, DANOS OU OUTRAS RESPONSABILIDADES, DECORRENTES DO USO DOS DADOS OU DE OUTRAS INTERAÇÕES COM ESTES.
+
+## 9) Versão e histórico
+
+- Versão deste arquivo: **v1.0 – 2025-10-20**
+- Mudanças futuras devem ser descritas abaixo (data, resumo, arquivos afetados).
+
+Changelog:
+- 2025-10-20: Criação do arquivo `DATA-LICENSE` e do modelo de `MANIFEST.csv`.
+
+---
+**Contato do mantenedor:** Anny Dias

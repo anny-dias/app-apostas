@@ -64,7 +64,7 @@ A pipeline cobre **SAST** (análise estática), **SCA** (análise de dependênci
 1. **Slack Webhook URL** (opcional):
    - Vá em **Settings → Secrets and variables → Actions → New repository secret**.
    - Nomeie como `SLACK_WEBHOOK_URL` e adicione a URL do webhook do Slack (necessário para notificações).
-   
+
 2. **Snyk Token** (opcional para SCA):
    - Crie uma conta no [Snyk](https://snyk.io/), gere um token de API.
    - Vá em **Settings → Secrets and variables → Actions → New repository secret**.
@@ -173,4 +173,3 @@ Caso tenha qualquer dúvida ou queira personalizar mais ainda, sinta-se à vonta
 
 * Código: Licença **MIT/Apache/BSD**.
 * Dados: Utilize **CC0/CC BY**. Certifique-se de **anonimizar dados pessoais**.
-

@@ -1,0 +1,10 @@
+rules:
+- id: lgpd-consent-bypass
+  message: "Coleta/uso de dados sem verificação de consentimento (LGPD)."
+  languages: [javascript, typescript]
+  severity: ERROR
+  patterns:
+    - pattern: |
+        router.post("/behavior/ingest", $MIDDLEWARES, ($REQ, $RES) => { ... })
+  metavariable-regex:
+    MIDDLEWARES: "(?s).*requireConsent.*"

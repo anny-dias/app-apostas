@@ -1,4 +1,25 @@
-* text=auto
-*.md text
-*.py text
-*.js text
+* text=auto eol=lf
+
+# Scripts Windows (deixam CRLF)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Arquivos de ambiente: sempre LF
+*.env text eol=lf
+.env text eol=lf
+.env.* text eol=lf
+.env.example text eol=lf
+
+# Binários (não normalizar)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.jar binary
+*.exe binary
+*.dll binary

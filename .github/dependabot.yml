@@ -2,9 +2,10 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/api"
-    schedule:
-      interval: "daily"
+    schedule: { interval: "daily" }
   - package-ecosystem: "pip"
     directory: "/ml"
-    schedule:
-      interval: "weekly"
+    schedule: { interval: "daily" }
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule: { interval: "daily" }
